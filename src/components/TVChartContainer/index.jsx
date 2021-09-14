@@ -22,7 +22,8 @@ function getLanguageFromURL() {
 		autosize: true,
 		datafeedUrl : Datafeed,
 		studiesOverrides: {},
-		theme: props.theme
+		theme: props.theme,
+		
 	};
 
 

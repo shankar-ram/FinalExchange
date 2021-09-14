@@ -192,8 +192,15 @@ class Add extends React.Component {
   componentDidMount() {
     setInterval(()=>{
       this.getUsers();
+
+     
     },1000)
+   
+  
   }
+
+
+
 handleChange(event, newValue){
 context.setState({value:newValue})
 }
@@ -570,15 +577,16 @@ handleReset = () =>{
                    
                   </Input>
                   <Label style={{marginTop:"1rem"}}>Add Aadhaar Photograph &nbsp;&nbsp;&nbsp;  </Label>
-                  <Input type="file" onChange={(e)=>{
-                    this.setState({aadh_photo:e.target.files})
+                  <Input required type="file" onChange={(e)=>{
+                    
+                    this.setState({aadh_photo:e.target.files[0]})
                   }}>
                  
                    
                   </Input>
                   <Label style={{marginTop:"1rem"}}>Add PAN Card Photograph &nbsp;</Label>
-                  <Input type="file"  onChange={(e)=>{
-                  this.setState({pan_photo:e.target.files})
+                  <Input required type="file"  onChange={(e)=>{
+                  this.setState({pan_photo:e.target.files[0]})
                   }}>
                    
                   </Input>
@@ -591,6 +599,10 @@ handleReset = () =>{
               </CardBody>
              
                 <button className="btn-lg" style={{width:"96%",borderRadius:"2rem",marginLeft:"1rem",backgroundColor:"rgb(253, 239, 239)",border:"none",padding:"1rem 0"}}  disabled={!this.state.validity}  type="submit" onClick={()=>{
+                  const adhData=new FormData();
+                  adhData.append("adh_photo",this.state.aadh_photo,`${localStorage.getItem("userid")}_aadh`)
+                  const panData=new FormData();
+                  panData.append("pan_photo",this.state.pan_photo, `${localStorage.getItem("userid")}_pan`)
                   axios("https://api.anteagle.tech/add_bank",{
                     method : "post",
                     headers: {
@@ -605,8 +617,8 @@ handleReset = () =>{
                       userid : localStorage.getItem("userid"),
                       aadhaar:this.state.aadhaar,
                       pan:this.state.pan,
-                      aadh_photo:this.state.aadh_photo,
-                      pan_photo:this.state.pan_photo
+                      aadh_photo:adhData,
+                      pan_photo:panData
                     })
                   }).then(reas=>{
                     if(reas.data.success){

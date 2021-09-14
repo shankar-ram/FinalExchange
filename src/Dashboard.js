@@ -47,7 +47,7 @@ import swal from "sweetalert";
 import {ButtonGroup,ButtonToggle,ToggleButton,ToggleButtonGroup, TabPane,Table, NavbarBrand, NavItem} from 'react-bootstrap';
 import logo from  './FInalCryptologo.png'
 
-
+import Referral from './referral'
 
 
 import Slider from "@material-ui/core/Slider";
@@ -100,6 +100,7 @@ import {Tabs,TabList,Tab,TabPanel} from 'react-tabs'
 import 'react-tabs/style/react-tabs.css';
 import NotificationAlert from "react-notification-alert";
 import QRCode from "react-qr-code";
+import { setRef } from '@material-ui/core';
 
 
 
@@ -255,8 +256,9 @@ function App() {
       
     }
   })
-
-  const [isDarkDes,setDarkDes]=React.useState(false)
+  const [referral , setReferral]=React.useState(false)
+  const [fullValue,setFullValue]=React.useState(false)
+  const [isDarkDes,setDarkDes]=React.useState(localStorage.getItem("dark")=="true")
   const [todiag,setToDiag]=React.useState(false)
   const [diag, setOpenDiag]=React.useState(false)
   const [isDropdownOpend , setDropdownOpenn ] = React.useState(false);
@@ -724,6 +726,19 @@ const [allorder,setallorders] = React.useState([])
       }
 
     })
+
+    axios({
+      method : "get",
+      url : `https://api.anteagle.tech/bankdetails?userid=${localStorage.getItem("userid")}`,
+      headers : {
+          'Accept' : "Application/json",
+          'Content-type' : "Application/JSON"
+      }
+  }).then(res=>{
+  
+     
+  })
+
     axios({
       method : "get",
       url : `https://api.anteagle.tech/allwallet?userid=${localStorage.getItem("userid")}`,
@@ -5226,7 +5241,7 @@ else{
       
 
     <Navbar bg= {isDarkDes?"dark":"light"} expand="lg" style={{padding:"20px"}}>
-    <img src={logo} style={{height:"70px",width:"70px"}}></img>{"   "}
+    <img src={logo} style={{height:"70px",width:"70px",backgroundColor:isDarkDes?"white":null,borderRadius:isDarkDes?"100%":"none" }}></img>{"   "}
        <Navbar.Brand href="#home" style={{fontFamily:"Strasua",marginLeft:"10px",color:isDarkDes?"white":"black"}}>Anteagle Exchange</Navbar.Brand>
        
       <Navbar.Toggle />
@@ -5269,7 +5284,10 @@ else{
       <Navbar.Collapse className="justify-content-end"  >
 
       <input type="checkbox" id="theme-toggle" onChange={(e)=>{
+      localStorage.setItem("dark",!isDarkDes)
       setDarkDes(!isDarkDes)
+      
+      
     }}/>
     <label for="theme-toggle">
      {isDarkDes ?  <img height="24px" src={moon} style={{filter:"invert(1)"}}/> : <img height="24px" src={sun}/>}
@@ -5277,15 +5295,27 @@ else{
         <span style={{paddingRight:"50px"}}>
 
         </span>
+        <Button variant ="success" style={{marginRight:"1rem"}} onClick={()=>{
+             sethome(false)
+        setportfolio(false)
+        setSwap(false)
+        setWithdraw(false)
+        setadd(false)
+          setReferral(true)
        
+            
+        }}>Referral Code</Button>
       <Button variant="success" style={{marginRight:'1rem'}} onClick={()=>{
         sethome(false)
         setportfolio(false)
         setSwap(false)
         setWithdraw(false)
+        setReferral(false)
         setadd(true)
+
       }}>Add INR </Button>
         {"   "}
+   
         <Button variant={!isDarkDes?"primary":"info"} onClick={()=>{
           localStorage.removeItem("jwt")
           window.location.href = "/"
@@ -5310,7 +5340,7 @@ else{
 
 { home ? <body style={{backgroundColor:isDarkDes?"#212529":"white"}}><div className="row" style={{ overflow:"auto" ,paddingRight:"20px",margin:"0 0 0 10px"}}>
 
-<div class="tabs" style={{width:"20%",backgroundColor:isDarkDes?"#161c2d":"white"}}>
+<div class="tabs" style={{width:"20%",backgroundColor:isDarkDes?"#161c2d":"white",height:"806px"}}>
       <Row >
       <Tabs > 
         <TabList >
@@ -6422,7 +6452,7 @@ else{
        
       </Navbar>                
   </div>
-  <TVChartContainer theme={isDarkDes? "Dark":"Light"}  pair={pair == "ANTEAG/USDT" || pair == 'ANTEAG/INRD' ? `AntEagle:${pair}` : `Binance:${pair}`}/>
+  <TVChartContainer theme={isDarkDes? "Dark":"Light"} pair={pair == "ANTEAG/USDT" || pair == 'ANTEAG/INRD' ? `AntEagle:${pair}` : `Binance:${pair}`}/>
 
 <div style={{height:"100rem"}}>
 <Col xs="11" style={{margin:"6.5rem 0 0 0.9rem"}} >
@@ -6673,17 +6703,27 @@ else{
                   <Label style={{  padding: "0.3rem", width: "99%" }}>From</Label>
                     <div className="input-swap"> 
                      
-                      <p style={{marginLeft:"0.7rem",marginTop:"0.5rem"}}>Max Available: {localStorage.getItem(`${butnval}_Coins`)}</p>
+                      <p style={{marginLeft:"0.7rem",marginTop:"0.5rem",color:"black"}}>Max Available: {localStorage.getItem(`${butnval}_Coins`)}   <button className="btn btn-sm btn-outline-warning" style={{borderRadius:"1.2rem"}} onClick={()=>{
+                        setFullValue(!fullValue)
+                        if(fullValue)
+                          setfromvalue(localStorage.getItem(`${butnval}_Coins`))
+                        else
+                          setfromvalue('')
+                      }} > Max</button> </p>
                       <Row>
                       <Col>
-                      <input className="inp-swap" placeholder={`ENTER ${butnval}`} onChange={(e) => {
-                        if (parseFloat(e.target.value) > parseFloat(localStorage.getItem(`${butnval}_Coins`))) {
+                      <input className="inp-swap" placeholder={`ENTER ${butnval}`} value={fromvalue} onChange={(e) => {
+                        if(e.target.value.length == 0){
+                          setfromvalue('')
+                        }
+                        else if (parseFloat(e.target.value) > parseFloat(localStorage.getItem(`${butnval}_Coins`))) {
                           alert("Please Enter Amount less than or equal to your wallet balance")
                           setvalid1(false);
                         }
                         else {
-
-                          setfromvalue(parseFloat(e.target.value))
+                          // setfromvalue('')
+                          console.log(parseFloat(e.target.value))
+                          setfromvalue(e.target.value)
                           //console.log("from>>>>>>>>>>",from)
                           //console.log("to>>>>>>>>>>>>",to)
                           //console.log(parseFloat(e.target.value))
@@ -6850,7 +6890,7 @@ else{
                         }
                         <Col>
                       
-                        <button className="from-btn btn btn-lg" style={{padding:"15px 30px",backgroundColor:"white",marginTop:"-2rem",borderRadius:"2rem 2rem",boxShadow:"rgb(0 0 0 / 8%) 0px 6px 10px",marginLeft:"3rem"}} onClick={()=>{
+                        <button className="from-btn btn btn-lg" style={{padding: "20px 50px",width:butnval=="ANTEAG"? "205px":"200px",backgroundColor:"white",marginTop:"-2.5rem",borderRadius:"2rem 2rem",boxShadow:"rgb(0 0 0 / 8%) 0px 6px 10px",marginLeft:"3rem"}} onClick={()=>{
                               setOpenDiag(true)
                         }}>
                          <img style={{width:"20px"}} src={butnval=="BTC"?logobtc:butnval=="ETH"?eth:butnval=="BNB"?bnb:butnval=="INRD"?ruppee:butnval=="USDT"?usdt:logo}></img> {butnval} 
@@ -6960,7 +7000,7 @@ else{
                         <MenuItem value={"ANTEAG"} >ANTEAG</MenuItem>
                       </Select> */}
 
-                      <button className="btn btn-lg " style={{padding:"15px 30px",backgroundColor:"white",borderRadius:"2rem 2rem",boxShadow:"rgb(0 0 0 / 8%) 0px 6px 10px",marginTop:"0.8rem",marginLeft:"3rem"}} value={to} onClick={()=>{
+                      <button className="btn btn-lg " style={{padding: "20px 50px",width:to=="ANTEAG"? "205px":"200px",backgroundColor:"white",borderRadius:"2rem 2rem",boxShadow:"rgb(0 0 0 / 8%) 0px 6px 10px",marginTop:"0.5rem",marginLeft:"3rem"}} value={to} onClick={()=>{
                          setToDiag(true)
                       }}>
                        <img style={{width:"20px"}} src={to=="BTC"?logobtc:to=="ETH"?eth:to=="BNB"?bnb:to=="INRD"?ruppee:to=="USDT"?usdt:logo}></img> {to}</button>
@@ -7020,7 +7060,7 @@ else{
 
 </> :  withdraw ? <>
 <body style={{backgroundColor:isDarkDes?"#212529":"white"}} >
-<div className="content" style={{marginLeft:"20rem",padding:"5rem 0 12rem 0"}}>
+<div className="content" style={{marginLeft:"29rem",padding:"5rem 0 12rem 0",width:"50%"}}>
         <Row style={{marginLeft:"0.5rem"}}>
           <Col md="8">
             <Card style={{paddingBottom:"2rem",borderRadius:"3rem",backgroundColor:isDarkDes?"#161c2d":"white",color: isDarkDes?"white":"black"}}>
@@ -7029,16 +7069,16 @@ else{
             
               <CardBody>
                 <Form>
-                  <Label>Enter Address</Label>
-                  <Input placeholder="Copy & Paste Your Address here to withdraw your coins" style={{borderRadius:"2rem",margin:"0.3rem 0"}} onChange={(e)=>{setwallet2(e.target.value)}}></Input>
-                  <Label>Amount</Label>
+                  <Label >Enter Address</Label>
+                  <Input placeholder="Copy & Paste Your Address here to withdraw your coins" style={{borderRadius:"2rem",margin:"0.3rem 0  "}} onChange={(e)=>{setwallet2(e.target.value)}}></Input>
+                  <Label  >Amount</Label>
                  
-                  <Input placeholder="Enter Amount" style={{borderRadius:"2rem",margin:"0.3rem 0"}} onChange={(e)=>{
+                  <Input placeholder="Enter Amount" style={{borderRadius:"2rem",margin:"0.3rem 0  "}} onChange={(e)=>{
                     setamount2(e.target.value)
                   }}></Input>
         
-                  <Label>Currency</Label>
-                  <Input placeholder="Select Currency" style={{borderRadius:"2rem",margin:"0.3rem 0"}} type="select" onChange={(e)=>{
+                  <Label  >Currency</Label>
+                  <Input placeholder="Select Currency" style={{borderRadius:"2rem",margin:"0.3rem 0 "}} type="select" onChange={(e)=>{
                     setcurrency2(e.target.value)
                   }}>
                     <option>BTC</option>
@@ -7046,7 +7086,7 @@ else{
                     <option>ETH</option>
                   </Input>
       
-                  <FormText>* Make sure the Address you entered is verified by your end. The amout of coins you entered will get directly transfered to this Address</FormText>
+                  <FormText >* Make sure the Address you entered is verified by your end. The amout of coins you entered will get directly transfered to this Address</FormText>
                 </Form>
                
 
@@ -7087,9 +7127,10 @@ else{
 </> : add ? 
 
 <Add/>
-:<> 
+: referral?<> <Referral /></>
+: <> 
 <body style={{backgroundColor:isDarkDes?"#212529":"white"}}>
-<div className="content" style={{marginLeft:"21rem",padding:"5rem 0 7rem 0",width:"50%"}}>
+<div className="content" style={{marginLeft:"27rem",padding:"5rem 0 7rem 0",width:"40%"}}>
         <div className="react-notification-alert-container">
           <NotificationAlert ref={notificationAlertRef} />
         </div>
@@ -7108,9 +7149,9 @@ else{
                   
                   
                   <Row>
-                    <Col className="ml-auto mr-auto" lg="8">
-                    <Tabs>
-    <TabList>
+                    <Col >
+                    <Tabs >
+    <TabList style={{textAlign:"center"}}>
       <Tab style={{backgroundColor:isDarkDes?"#161c2d":"white",color: isDarkDes?"white":"black"}}>BTC</Tab>
       <Tab style={{backgroundColor:isDarkDes?"#161c2d":"white",color: isDarkDes?"white":"black"}}>ETH</Tab>
       <Tab style={{backgroundColor:isDarkDes?"#161c2d":"white",color: isDarkDes?"white":"black"}}>USDT</Tab>
@@ -7119,50 +7160,57 @@ else{
 
     <TabPanel>
 
-       <Label style={{margin:"0.3rem 0"}}>YOUR BTC ADDRESS</Label>
+       <Label style={{margin:"0.3rem 4rem"}}>YOUR BTC ADDRESS</Label>
        <InputGroup>
-       <Input placeholder="18HwcqpEf7nSdMGgrnw2WCnrkGjnTpEyek" disabled="true"/><Button onClick={()=>{
+       <Input style={{marginLeft:"4rem"}} placeholder="18HwcqpEf7nSdMGgrnw2WCnrkGjnTpEyek" disabled="true"/><Button onClick={()=>{
 
          notify('tr')
        }} style={{marginTop:"-0.17rem"}}><img src="https://img.icons8.com/fluent-systems-regular/20/000000/copy.png"/></Button>
        </InputGroup>
-       <Label style={{margin:"0.3rem 0"}}>SCAN THIS TO GET CODE</Label>
+       <Label style={{margin:"0.3rem 4rem"}}>SCAN THIS TO GET CODE</Label>
       <br/>
-       <QRCode value="18HwcqpEf7nSdMGgrnw2WCnrkGjnTpEyek" />
-
+      <div style={{marginLeft:"4rem"}}>
+       <QRCode  value="18HwcqpEf7nSdMGgrnw2WCnrkGjnTpEyek" />
+      </div>
     </TabPanel>
     <TabPanel>
-    <Label style={{margin:"0.3rem 0"}}>YOUR ETH ADDRESS</Label>
+    <Label style={{margin:"0.3rem 4rem"}}>YOUR ETH ADDRESS</Label>
        <InputGroup>
-       <Input placeholder="0xf218970b176c262cb4e5d15bb4195c6973077848" disabled="true"/><Button onClick={()=>{
+       <Input style={{marginLeft:"4rem"}} placeholder="0xf218970b176c262cb4e5d15bb4195c6973077848" disabled="true"/><Button onClick={()=>{
          notify('tr')
        }} style={{marginTop:"-0.17rem"}}><img src="https://img.icons8.com/fluent-systems-regular/20/000000/copy.png"/></Button>
        </InputGroup>
-       <Label  style={{margin:"0.3rem 0"}}>SCAN THIS TO GET CODE</Label>
+       <Label  style={{margin:"0.3rem 4rem"}}>SCAN THIS TO GET CODE</Label>
       <br/>
+      <div   style={{marginLeft:"4rem"}} > 
        <QRCode value="0xf218970b176c262cb4e5d15bb4195c6973077848" />
+       </div>
     </TabPanel>
     <TabPanel>
-    <Label  style={{margin:"0.3rem 0"}}>YOUR USDT ADDRESS</Label>
+    <Label  style={{margin:"0.3rem 4rem"}}>YOUR USDT ADDRESS</Label>
        <InputGroup>
-       <Input placeholder="0xf218970b176c262cb4e5d15bb4195c6973077848" disabled="true"/><Button onClick={()=>{
+       <Input  style={{marginLeft:"4rem"}}  placeholder="0xf218970b176c262cb4e5d15bb4195c6973077848" disabled="true"/><Button onClick={()=>{
          notify('tr')
        }} style={{marginTop:"-0.17rem"}}><img src="https://img.icons8.com/fluent-systems-regular/20/000000/copy.png"/></Button>
        </InputGroup>
-       <Label style={{margin:"0.3rem 0"}}>SCAN THIS TO GET CODE</Label>
+       <Label style={{margin:"0.3rem 4rem"}}>SCAN THIS TO GET CODE</Label>
       <br/>
+      <div  style={{marginLeft:"4rem"}} >
        <QRCode value="0xf218970b176c262cb4e5d15bb4195c6973077848" />
+       </div>
     </TabPanel>
     <TabPanel>
-    <Label style={{margin:"0.3rem 0"}}>YOUR BNB ADDRESS</Label>
+    <Label style={{margin:"0.3rem 4rem"}}>YOUR BNB ADDRESS</Label>
        <InputGroup>
-       <Input placeholder="0xf218970b176c262cb4e5d15bb4195c6973077848" disabled="true"/><Button onClick={()=>{
+       <Input  style={{marginLeft:"4rem"}}  placeholder="0xf218970b176c262cb4e5d15bb4195c6973077848" disabled="true"/><Button onClick={()=>{
          notify('tr')
        }} style={{marginTop:"-0.17rem"}}><img src="https://img.icons8.com/fluent-systems-regular/20/000000/copy.png"/></Button>
        </InputGroup>
-       <Label style={{margin:"0.3rem 0"}}>SCAN THIS TO GET CODE</Label>
+       <Label style={{margin:"0.3rem 4rem"}}>SCAN THIS TO GET CODE</Label>
       <br/>
+      <div  style={{marginLeft:"4rem"}} >
        <QRCode value="0xf218970b176c262cb4e5d15bb4195c6973077848" />
+       </div>
     </TabPanel>
   
   </Tabs>
