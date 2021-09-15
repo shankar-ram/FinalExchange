@@ -600,26 +600,22 @@ handleReset = () =>{
              
                 <button className="btn-lg" style={{width:"96%",borderRadius:"2rem",marginLeft:"1rem",backgroundColor:"rgb(253, 239, 239)",border:"none",padding:"1rem 0"}}  disabled={!this.state.validity}  type="submit" onClick={()=>{
                   const adhData=new FormData();
-                  adhData.append("adh_photo",this.state.aadh_photo,`${localStorage.getItem("userid")}_aadh`)
-                  const panData=new FormData();
-                  panData.append("pan_photo",this.state.pan_photo, `${localStorage.getItem("userid")}_pan`)
+                  adhData.append("file",this.state.aadh_photo)
+                  adhData.append("file2",this.state.pan_photo)
+                  adhData.append("bankname",this.state.bankname)
+                  adhData.append("aadhar",this.state.aadhaar)
+                  adhData.append("ifsc",this.state.ifsc)
+                  adhData.append("accname",this.state.accname)
+                  adhData.append("accnumber",this.state.accnumber_2)
+                  adhData.append("userid",localStorage.getItem("userid"))
                   axios("https://api.anteagle.tech/add_bank",{
                     method : "post",
                     headers: {
                       'Accept' : 'Application/json',
                       'Content-type' : 'application/json'
                     },
-                    data : JSON.stringify({
-                      bankname : this.state.bankname,
-                      accnumber : this.state.accnumber_2,
-                      ifsc : this.state.ifsc,
-                      accname : this.state.accname,
-                      userid : localStorage.getItem("userid"),
-                      aadhaar:this.state.aadhaar,
-                      pan:this.state.pan,
-                      aadh_photo:adhData,
-                      pan_photo:panData
-                    })
+                    data : adhData
+
                   }).then(reas=>{
                     if(reas.data.success){
                     localStorage.setItem("bank",true)

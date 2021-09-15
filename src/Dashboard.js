@@ -101,7 +101,7 @@ import 'react-tabs/style/react-tabs.css';
 import NotificationAlert from "react-notification-alert";
 import QRCode from "react-qr-code";
 import { setRef } from '@material-ui/core';
-
+import Withdraw from './Withdraw'
 
 
 function getStepContent(step) {
@@ -256,6 +256,7 @@ function App() {
       
     }
   })
+  const [withdrawAmt,setWithdrawAmt]=React.useState(false)
   const [referral , setReferral]=React.useState(false)
   const [fullValue,setFullValue]=React.useState(false)
   const [isDarkDes,setDarkDes]=React.useState(localStorage.getItem("dark")=="true")
@@ -5254,18 +5255,21 @@ else{
             setportfolio(false)
             setSwap(false)
             setWithdraw(false)
+            setWithdrawAmt(false)
           }}>Home</Nav.Link>
           <Nav.Link href="#home"  style={{color:isDarkDes?"white":"#0275d8"}} onClick={()=>{
             sethome(false)
             setportfolio(false)
             setWithdraw(false)
             setSwap(true)
+            setWithdrawAmt(false)
           }}>Swap</Nav.Link>
           <Nav.Link href="#home"  style={{color:isDarkDes?"white":"#0275d8"}}  onClick={()=>{
             sethome(false)
             setportfolio(false)
             setSwap(false)
             setWithdraw(false)
+            setWithdrawAmt(false)
           }}
           >Add Asset</Nav.Link>
           <Nav.Link href="#home"   style={{color:isDarkDes?"white":"#0275d8"}} onClick={()=>{
@@ -5273,12 +5277,21 @@ else{
             setportfolio(false)
             setSwap(false)
             setWithdraw(true)
+            setWithdrawAmt(false)
           }}>Withdraw Asset</Nav.Link>
+           <Nav.Link href="#home"   style={{color:isDarkDes?"white":"#0275d8"}} onClick={()=>{
+            sethome(false)
+            setportfolio(false)
+            setSwap(false)
+            setWithdraw(false)
+            setWithdrawAmt(true)
+          }}>Withdraw Amount</Nav.Link>
           <Nav.Link href="#link"  style={{color:isDarkDes?"white":"#0275d8"}} onClick={()=>{
             sethome(false)
             setportfolio(true)
             setSwap(false)
             setWithdraw(false)
+            setWithdrawAmt(false)
           }}>Wallet  </Nav.Link>
       </Navbar.Collapse>
       <Navbar.Collapse className="justify-content-end"  >
@@ -7127,7 +7140,8 @@ else{
 </> : add ? 
 
 <Add/>
-: referral?<> <Referral /></>
+: referral?<> <Referral /></> : withdrawAmt ?<> <body  style={{backgroundColor:isDarkDes?"#212529":"white"}}> <Withdraw></Withdraw> </body>
+</>
 : <> 
 <body style={{backgroundColor:isDarkDes?"#212529":"white"}}>
 <div className="content" style={{marginLeft:"27rem",padding:"5rem 0 7rem 0",width:"40%"}}>
