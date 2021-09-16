@@ -32,8 +32,11 @@ const [bank,setban] = React.useState([])
 const [dropdownOpen, setDropdownOpen] = React.useState(false);
 const [splitButtonOpen, setSplitButtonOpen] = React.useState(false);
 const [wallet,setwallet] = React.useState(true);
-const [amount,setamount] = React.useState(0)
+const [butnWal,setbutnWal]=React.useState(false);
+const [walletPer,setwalletPer]=React.useState(true)
+const [amount,setamount] = React.useState('')
 const [currency,setcurrency] = React.useState('');
+
 useEffect(()=>{
     axios({
         method : "get",
@@ -108,27 +111,38 @@ useEffect(()=>{
                     <Input placeholder="Enter Name"  disabled="true" style={{marginBottom:"0.3rem",borderRadius:"1.5rem"}} value={bank.Acc_name}></Input>
 
                     <Label>Enter Amount</Label>
-                    <Input style={{marginBottom:"0.3rem",borderRadius:"1.5rem"}}  placeholder="Minimum Withdraw Amount 5000 INR" onChange={(e)=>{
-                      if(e.target.value < 5000 || e.target.value > parseFloat(localStorage.getItem("INRD_Coins"))){
-                        setwallet(true)
-                      }
-                      else{
-                        setwallet(false)
-                        setamount(e.target.value)
-                      }
-                     
+                    <Input  style={{marginBottom:"0.3rem",borderRadius:"1.5rem",border: amount<5000 || amount> parseFloat(localStorage.getItem("INRD_Coins"))?"3px solid red":"1px solid grey"}} value={ amount} placeholder="Minimum Withdraw Amount 5000 INR" onChange={(e)=>{
+     
+                      setamount(e.target.value)
+
+                  
                     }}>
                      
                     </Input>
-        
+                    <button style={{marginRight:"0.5rem",borderRadius:"1.5rem",width:"60px"}} className="btn btn-sm btn-outline-warning" onClick={()=>{
+         
+                       
+                        setamount(parseFloat(localStorage.getItem("INRD_Coins"))*0.25)
+                       
+                    }}>25%</button>
+                    <button style={{marginRight:"0.5rem",borderRadius:"1.5rem",width:"60px"}} className="btn btn-sm btn-outline-warning" onClick={()=>{
+                          setamount(parseFloat(localStorage.getItem("INRD_Coins"))*0.5)
+                       
+                    }}>50%</button>
+                    <button style={{marginRight:"0.5rem",borderRadius:"1.5rem",width:"60px"}} className="btn btn-sm btn-outline-warning" onClick={()=>{
+                           setamount(parseFloat(localStorage.getItem("INRD_Coins")))
+                    
+                    }}>100%</button><br/>
                     <FormText>*Your Withdraw amount will be refunded back to this Account only in 10-15 mins</FormText>
                   </Form>
                  
   
                 </CardBody>
-              
-                  <button disabled={wallet}  className="btn-lg" style={{color:"black",width:"96%",borderRadius:"2rem",marginLeft:"0.6rem",backgroundColor:"rgb(253, 239, 239)",border:"none",padding:"1rem 0"}}  type="submit" onClick={()=>{
-                      var end = parseFloat(localStorage.getItem("INRD_Coins")) - amount
+                {/* disabled={!butnWal} */}
+                  <button disabled={amount <5000 || amount> parseFloat(localStorage.getItem("INRD_Coins")) }   className="btn-lg" style={{color:"black",width:"96%",borderRadius:"2rem",marginLeft:"0.6rem",backgroundColor:"rgb(253, 239, 239)",border:"none",padding:"1rem 0"}}  type="submit" onClick={()=>{
+                      
+                  
+                       var end = parseFloat(localStorage.getItem("INRD_Coins")) - amount
                       axios({
                         method:"post",
                         url : `https://api.anteagle.tech/getinrd?coins=${end}&userid=${localStorage.getItem("userid")}`,

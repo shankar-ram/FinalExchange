@@ -172,6 +172,7 @@ class Add extends React.Component {
     accnumber_2 : '',
     bankname : '',
     validity : false,
+    validity1:false,
     accname : '',
     ifsc : '',
     curr : 'INRD',
@@ -444,7 +445,7 @@ handleReset = () =>{
         
           <Dialog open={this.state.visible}  aria-labelledby="form-dialog-title">
        
-        <DialogContent>
+        <DialogContent  >
           {this.state.upi_buy ? <>
             <DialogContentText style={{cursor:"pointer"}} onClick={()=>{
               this.setState({upi_buy:false})
@@ -488,18 +489,18 @@ handleReset = () =>{
           </Button>
         </DialogActions>
           </> : <>
-            <Card>
+            <Card style={{backgroundColor:localStorage.getItem("dark")!="false"?"#161c2d":"white",color:localStorage.getItem("dark")!="false" ?"white":"black",width:"100%",marginLeft:"-0.1rem"}}>
       
           <CardBody>
             <CardTitle tag="h5">UPI </CardTitle>
             <CardSubtitle tag="h6" className="mb-2 text-muted">UPI Tranfer</CardSubtitle>
             <CardText>Use any UPI app on your phone like GooglePay, PhonePe, BHIM, Paytm | Fees : ₹ 0  <img src="https://img.icons8.com/color/48/000000/google-pay-india.png"/> <img src="https://img.icons8.com/color/48/000000/phone-pe.png"/>  <img src="https://img.icons8.com/color/48/000000/paytm.png"/> <img src="https://img.icons8.com/fluency/48/000000/bhim.png"/>  </CardText>
-            <Button onClick={()=>{
+            <Button  onClick={()=>{
               this.setState({upi_buy:true})
             }}>BUY</Button>
           </CardBody>
         </Card>
-      <Card>
+      <Card style={{backgroundColor:localStorage.getItem("dark")!="false"?"#161c2d":"white",color:localStorage.getItem("dark")!="false" ?"white":"black",width:"100%",marginLeft:"-0.1rem"}}>
     
     <CardBody>
 
@@ -523,7 +524,7 @@ handleReset = () =>{
 
       <Dialog open={this.state.visible_1}  aria-labelledby="form-dialog-title">
        
-       <DialogContent>
+       <DialogContent style={{backgroundColor:localStorage.getItem("dark")!="false"?"#161c2d":"white",color:localStorage.getItem("dark")!="false" ?"white":"black"}}>
        
               
                 <h3 style={{textAlign:"center"}} className="title">Enter Your Bank Details</h3>
@@ -542,9 +543,13 @@ handleReset = () =>{
 
                     }
                     else{
+                     
                       this.setState({validity : false})
+               
                     }
                   }}></Input>
+
+                  {!this.state.validity ? <p style={{color:"red"}}>Please ensure that the passwords match</p> :null }
                   <Label>Enter Account Holder Name</Label>
                  
                   <Input placeholder="Enter Account Holder Name" onChange={(e)=>{
@@ -587,6 +592,9 @@ handleReset = () =>{
                   <Label style={{marginTop:"1rem"}}>Add PAN Card Photograph &nbsp;</Label>
                   <Input required type="file"  onChange={(e)=>{
                   this.setState({pan_photo:e.target.files[0]})
+                  this.setState({validity1 : true})
+
+                
                   }}>
                    
                   </Input>
@@ -598,7 +606,7 @@ handleReset = () =>{
 
               </CardBody>
              
-                <button className="btn-lg" style={{width:"96%",borderRadius:"2rem",marginLeft:"1rem",backgroundColor:"rgb(253, 239, 239)",border:"none",padding:"1rem 0"}}  disabled={!this.state.validity}  type="submit" onClick={()=>{
+                <button className="btn-lg" style={{width:"96%",borderRadius:"2rem",marginLeft:"1rem",backgroundColor:"rgb(253, 239, 239)",border:"none",padding:"1rem 0",color:"black"}}  disabled={ !this.state.validity || !this.state.validity1}  type="submit" onClick={()=>{
                   const adhData=new FormData();
                   adhData.append("file",this.state.aadh_photo)
                   adhData.append("file2",this.state.pan_photo)
@@ -623,9 +631,9 @@ handleReset = () =>{
                      this.setState({visible:true})
                     }
                   })   
-                  console.log(this.state.pan_photo)
-                }}>
-                  Submit
+                 
+                }}><b>
+                  SUBMIT</b>
                 </button>
             
             

@@ -256,6 +256,16 @@ function App() {
       
     }
   })
+
+  const [fullStop_market_trig,setfullStop_market_trig]=React.useState(0)
+  const [fullStop_market_stop,setfullStop_market_stop]=React.useState(0)
+  const [fullStop_limit_trig,setfullStop_limit_trig]=React.useState(0)
+  const [fullStop_limit_stop,setfullStop_limit_stop]=React.useState(0)
+  const [fullStop_market_quantity, setfullStop_market_quantity]=React.useState(0)
+  const [fullStop_limit_quantity, setfullStop_limit_quantity]=React.useState(0)
+  const [fullStop_limit_profit1,setfullStop_limit_profit1]=React.useState(0)
+  const [fullStop_market_profit1,setfullStop_market_profit1]=React.useState(0)
+
   const [withdrawAmt,setWithdrawAmt]=React.useState(false)
   const [referral , setReferral]=React.useState(false)
   const [fullValue,setFullValue]=React.useState(false)
@@ -413,6 +423,7 @@ const [allorder,setallorders] = React.useState([])
   const [stop_buy_stop,setStop_buy_stop]=React.useState(0);
   const [stop_buy_amount,setStop_buy_amount]=React.useState(0);
   const [stopTake_sell_trig,setStopTake_sell_trig]=React.useState(0);
+  const [stopTake_sell_take,setStopTake_sell_take]=React.useState(0);
   const [stopTake_sell_amount,setStopTake_sell_amount]=React.useState(0);
   const [stopTake_sell_total,setStopTake_sell_total]=React.useState(0);
 
@@ -5619,7 +5630,7 @@ else{
                 <Label>Amount ({`${pair.substr(0,pair.indexOf('/'))}`})</Label>
                 <Input invalid={!valid} style={{color:"black"}} placeholder={`ENTER AMOUNT in ${pair.substr(0,pair.indexOf('/'))}`} disabled={true} value={stop_buy_amount} onChange={(event)=>{
       const curr = `${pair.substr(pair.indexOf('/')+1,pair.length)}_Coins`
-     if(parseFloat(event.target.value*stop_buy_trig)>parseFloat(localStorage.getItem(curr))){
+     if(parseFloat(event.target.value*stop_buy_stop)>parseFloat(localStorage.getItem(curr))){
       setvalid(false)
      }
      else{
@@ -5639,12 +5650,51 @@ else{
      else{
       setvalid(true)
     
-      setStop_buy_amount(parseFloat(parseFloat(event.target.value) /parseFloat(stop_buy_trig)) )
+      setStop_buy_amount(parseFloat(parseFloat(event.target.value) /parseFloat(stop_buy_stop)) )
      }
       
     }}></Input>
 
-                <Button size="lg" className="bg-success" style={{margin:"2rem 0 2rem 0",display:"block",width:"100%"}}>Buy {`${pair.substr(0,pair.indexOf('/'))}`}</Button>
+                <Button size="lg" className="bg-success" style={{margin:"2rem 0 2rem 0",display:"block",width:"100%"}} type="submit" onClick={()=>{
+                    
+                        axios({
+                  method:"POST",
+                  url:"https://api.anteagle.tech/hit",
+                  headers:{
+                    "Accept": "application/json, text/plain, */*", // It can be used to overcome cors errors
+                    "Content-Type": "application/json",
+                    Authtoken:"sfsfsff"
+                  },
+                  data: JSON.stringify({
+                    userid : localStorage.getItem("userid"),
+                    date: "2021-06-21",
+                    pair: pair,
+                    type:"Limit",
+                    side : "BUY",
+                    triggerPrice : stop_buy_trig ,
+                    hitPrice :stop_buy_stop,
+                    Amount : parseFloat(stop_buy_amount).toFixed(5),
+                    filled : "0.0",
+                    total : stop_buy_stop*stop_buy_amount
+                  }),
+                }).then(res=>{console.log(res.data)})
+                const curr = `${pair.substr(pair.indexOf('/')+1,pair.length)}`
+                const tem = parseFloat(localStorage.getItem(`${curr}_Coins`)) - (parseFloat(stop_buy_stop)*parseFloat(stop_buy_amount))
+                alert(parseFloat(localStorage.getItem(`${curr}_Coins`)))
+                alert(tem)
+                axios({
+                  method:"post",
+                  url : `https://api.anteagle.tech/get${curr.toLowerCase()}?coins=${tem}&userid=${localStorage.getItem("userid")}`,
+                  headers:{
+                    "Accept": "application/json",
+                  }
+                }).then(res=>{
+                  console.log(res.data);
+                  swal("Success","Order Submitted Successfully","success");
+                  // window.location.href = "/"
+                })
+              
+                }}>Buy {`${pair.substr(0,pair.indexOf('/'))}`}</Button>
               </Form>
           </TabPanel>
       
@@ -5862,22 +5912,33 @@ else{
          
          <Form  style={{color:isDarkDes?"white":"black"}}>
            <Label>Trigger Price  ( {`${pair.substr(pair.indexOf('/')+1,pair.length)}`} )</Label>
-           <Input placeholder={`ENTER PRICE in ${pair.substr(pair.indexOf('/')+1,pair.length)}`} onChange={(event)=>{
+           <Input invalid={!valid_s} placeholder={`ENTER PRICE in ${pair.substr(pair.indexOf('/')+1,pair.length)}`} onChange={(event)=>{
+             
    setStopTake_sell_trig(parseFloat(event.target.value))
+           
+              if(stopTake_sell_trig> localStorage.getItem(`${pair.substr(pair.indexOf('/')+1,pair.length)}_Coins` ))
+                    setvalid_s(false)
+              else  
+                  setvalid_s(true)
  }}></Input>
 
-        
+<Label>Take Price  ( {`${pair.substr(pair.indexOf('/')+1,pair.length)}`} )</Label>
+           <Input invalid={!valid_s} disabled placeholder={`ENTER PRICE in ${pair.substr(pair.indexOf('/')+1,pair.length)}`}  value={pair == "BTC/USDT" ? liveprice_BTC : pair == "BTC/INRD" ? parseFloat(liveprice_BTC*conversion).toFixed(2) : pair == "ETH/USDT" ? liveprice_ETH : pair == "ETH/INRD" ? parseFloat(liveprice_ETH*conversion).toFixed(2) : pair == "BNB/USDT" ? liveprice_BNB : pair == "BNB/INRD" ? parseFloat(liveprice_BNB*conversion).toFixed(2) : pair == "KSM/USDT" ? liveprice_KSM : pair == "KSM/INRD" ? parseFloat(liveprice_KSM*conversion).toFixed(2) : pair =="ATA/USDT"? liveprice_ATA : pair=="ATA/INRD" ? parseFloat(liveprice_ATA*conversion).toFixed(2) : pair=="MANA/USDT"? liveprice_MANA : pair=="MANA/INRD" ? parseFloat(liveprice_MANA*conversion).toFixed(2) : pair=="DGB/USDT"?liveprice_DGB: pair=="DGB/INRD"? parseFloat(liveprice_DGB*conversion).toFixed(2) : pair=="FTM/USDT"?liveprice_FTM: pair=="FTM/INRD"? parseFloat(liveprice_FTM*conversion).toFixed(2) : pair=="ALICE/USDT"?liveprice_ALICE: pair=="ALICE/INRD"? parseFloat(liveprice_ALICE*conversion).toFixed(2) : pair=="GTC/USDT"?liveprice_GTC: pair=="GTC/INRD"? parseFloat(liveprice_GTC*conversion).toFixed(2) : pair=="MATIC/USDT"?liveprice_MATIC: pair=="MATIC/INRD"? parseFloat(liveprice_MATIC*conversion).toFixed(2):pair=="AXS/USDT"?liveprice_AXS: pair=="AXS/INRD"? parseFloat(liveprice_AXS*conversion).toFixed(2): pair=="FTT/USDT"?liveprice_FTT: pair=="FTT/INRD"? parseFloat(liveprice_FTT*conversion).toFixed(2) :pair=="SOL/USDT"?liveprice_SOL: pair=="SOL/INRD"? parseFloat(liveprice_SOL*conversion).toFixed(2) :pair=="RUNE/USDT"?liveprice_RUNE: pair=="RUNE/INRD"? parseFloat(liveprice_RUNE*conversion).toFixed(2) :pair=="UNI/USDT"?liveprice_UNI: pair=="UNI/INRD"? parseFloat(liveprice_UNI*conversion).toFixed(2):pair=="DOT/USDT"?liveprice_DOT: pair=="DOT/INRD"? parseFloat(liveprice_DOT*conversion).toFixed(2) :pair=="VET/USDT"?liveprice_VET: pair=="VET/INRD"? parseFloat(liveprice_VET*conversion).toFixed(2):pair=="TFUEL/USDT"?liveprice_TFUEL: pair=="TFUEL/INRD"? parseFloat(liveprice_TFUEL*conversion).toFixed(2):pair=="GRT/USDT"?liveprice_GRT: pair=="GRT/INRD"? parseFloat(liveprice_GRT*conversion).toFixed(2):pair=="ADA/USDT"?liveprice_ADA: pair=="ADA/INRD"? parseFloat(liveprice_ADA*conversion).toFixed(2):pair=="FIL/USDT"?liveprice_FIL: pair=="FIL/INRD"? parseFloat(liveprice_FIL*conversion).toFixed(2):pair=="LINK/USDT"?liveprice_LINK: pair=="LINK/INRD"? parseFloat(liveprice_LINK*conversion).toFixed(2):pair=="LUNA/USDT"?liveprice_LUNA: pair=="LUNA/INRD"? parseFloat(liveprice_LUNA*conversion).toFixed(2):pair=="THETA/USDT"?liveprice_THETA: parseFloat(liveprice_THETA*conversion).toFixed(2)} onChange={(event)=>{
+   setStopTake_sell_take(parseFloat(event.target.value))
+  
+   if(stopTake_sell_take> localStorage.getItem(`${pair.substr(pair.indexOf('/')+1,pair.length)}_Coins` ))
+                    setvalid_s(false)
+              else{
+                   setvalid_s(true)
+                }  
+ }}></Input>
+      {stopTake_sell_trig > (pair == "BTC/USDT" ? liveprice_BTC : pair == "BTC/INRD" ? parseFloat(liveprice_BTC*conversion).toFixed(2) : pair == "ETH/USDT" ? liveprice_ETH : pair == "ETH/INRD" ? parseFloat(liveprice_ETH*conversion).toFixed(2) : pair == "BNB/USDT" ? liveprice_BNB : pair == "BNB/INRD" ? parseFloat(liveprice_BNB*conversion).toFixed(2) : pair == "KSM/USDT" ? liveprice_KSM : pair == "KSM/INRD" ? parseFloat(liveprice_KSM*conversion).toFixed(2) : pair =="ATA/USDT"? liveprice_ATA : pair=="ATA/INRD" ? parseFloat(liveprice_ATA*conversion).toFixed(2) : pair=="MANA/USDT"? liveprice_MANA : pair=="MANA/INRD" ? parseFloat(liveprice_MANA*conversion).toFixed(2) : pair=="DGB/USDT"?liveprice_DGB: pair=="DGB/INRD"? parseFloat(liveprice_DGB*conversion).toFixed(2) : pair=="FTM/USDT"?liveprice_FTM: pair=="FTM/INRD"? parseFloat(liveprice_FTM*conversion).toFixed(2) : pair=="ALICE/USDT"?liveprice_ALICE: pair=="ALICE/INRD"? parseFloat(liveprice_ALICE*conversion).toFixed(2) : pair=="GTC/USDT"?liveprice_GTC: pair=="GTC/INRD"? parseFloat(liveprice_GTC*conversion).toFixed(2) : pair=="MATIC/USDT"?liveprice_MATIC: pair=="MATIC/INRD"? parseFloat(liveprice_MATIC*conversion).toFixed(2):pair=="AXS/USDT"?liveprice_AXS: pair=="AXS/INRD"? parseFloat(liveprice_AXS*conversion).toFixed(2): pair=="FTT/USDT"?liveprice_FTT: pair=="FTT/INRD"? parseFloat(liveprice_FTT*conversion).toFixed(2) :pair=="SOL/USDT"?liveprice_SOL: pair=="SOL/INRD"? parseFloat(liveprice_SOL*conversion).toFixed(2) :pair=="RUNE/USDT"?liveprice_RUNE: pair=="RUNE/INRD"? parseFloat(liveprice_RUNE*conversion).toFixed(2) :pair=="UNI/USDT"?liveprice_UNI: pair=="UNI/INRD"? parseFloat(liveprice_UNI*conversion).toFixed(2):pair=="DOT/USDT"?liveprice_DOT: pair=="DOT/INRD"? parseFloat(liveprice_DOT*conversion).toFixed(2) :pair=="VET/USDT"?liveprice_VET: pair=="VET/INRD"? parseFloat(liveprice_VET*conversion).toFixed(2):pair=="TFUEL/USDT"?liveprice_TFUEL: pair=="TFUEL/INRD"? parseFloat(liveprice_TFUEL*conversion).toFixed(2):pair=="GRT/USDT"?liveprice_GRT: pair=="GRT/INRD"? parseFloat(liveprice_GRT*conversion).toFixed(2):pair=="ADA/USDT"?liveprice_ADA: pair=="ADA/INRD"? parseFloat(liveprice_ADA*conversion).toFixed(2):pair=="FIL/USDT"?liveprice_FIL: pair=="FIL/INRD"? parseFloat(liveprice_FIL*conversion).toFixed(2):pair=="LINK/USDT"?liveprice_LINK: pair=="LINK/INRD"? parseFloat(liveprice_LINK*conversion).toFixed(2):pair=="LUNA/USDT"?liveprice_LUNA: pair=="LUNA/INRD"? parseFloat(liveprice_LUNA*conversion).toFixed(2):pair=="THETA/USDT"?liveprice_THETA: parseFloat(liveprice_THETA*conversion).toFixed(2))?  <p style={{color:"red",fontSize:"0.7rem"}} >*Take price must be higher than trigger price</p>:null }
 
            <Label>Amount ({`${pair.substr(0,pair.indexOf('/'))}`})</Label>
            <Input invalid={!valid_s} placeholder={`ENTER AMOUNT in ${pair.substr(0,pair.indexOf('/'))}`} value={stopTake_sell_amount} onChange={(event)=>{
    const curr = `${pair.substr(pair.indexOf('/')+1,pair.length)}_Coins`
-   if(parseFloat(event.target.value) > parseFloat(localStorage.getItem(curr))){
-     setvalid_s(false)
-   }
-   else{
-     setvalid_s(true)
-     setStopTake_sell_amount(parseFloat(event.target.value))
-   }
+  
+  
    
  }}></Input>
 
@@ -5886,7 +5947,7 @@ else{
      getAriaValueText={(value)=>{
        const g = parseFloat(localStorage.getItem(`${pair.substr(0,pair.indexOf('/'))}_Coins`)*value/100).toFixed(5) 
        setStopTake_sell_amount(parseFloat(localStorage.getItem(`${pair.substr(0,pair.indexOf('/'))}_Coins`)*value/100).toFixed(5))
-       setStopTake_sell_total(g*stopTake_sell_trig)
+       setStopTake_sell_total(parseFloat(g* (pair == "BTC/USDT" ? liveprice_BTC : pair == "BTC/INRD" ? parseFloat(liveprice_BTC*conversion).toFixed(2) : pair == "ETH/USDT" ? liveprice_ETH : pair == "ETH/INRD" ? parseFloat(liveprice_ETH*conversion).toFixed(2) : pair == "BNB/USDT" ? liveprice_BNB : pair == "BNB/INRD" ? parseFloat(liveprice_BNB*conversion).toFixed(2) : pair == "KSM/USDT" ? liveprice_KSM : pair == "KSM/INRD" ? parseFloat(liveprice_KSM*conversion).toFixed(2) : pair =="ATA/USDT"? liveprice_ATA : pair=="ATA/INRD" ? parseFloat(liveprice_ATA*conversion).toFixed(2) : pair=="MANA/USDT"? liveprice_MANA : pair=="MANA/INRD" ? parseFloat(liveprice_MANA*conversion).toFixed(2) : pair=="DGB/USDT"?liveprice_DGB: pair=="DGB/INRD"? parseFloat(liveprice_DGB*conversion).toFixed(2) : pair=="FTM/USDT"?liveprice_FTM: pair=="FTM/INRD"? parseFloat(liveprice_FTM*conversion).toFixed(2) : pair=="ALICE/USDT"?liveprice_ALICE: pair=="ALICE/INRD"? parseFloat(liveprice_ALICE*conversion).toFixed(2) : pair=="GTC/USDT"?liveprice_GTC: pair=="GTC/INRD"? parseFloat(liveprice_GTC*conversion).toFixed(2) : pair=="MATIC/USDT"?liveprice_MATIC: pair=="MATIC/INRD"? parseFloat(liveprice_MATIC*conversion).toFixed(2):pair=="AXS/USDT"?liveprice_AXS: pair=="AXS/INRD"? parseFloat(liveprice_AXS*conversion).toFixed(2): pair=="FTT/USDT"?liveprice_FTT: pair=="FTT/INRD"? parseFloat(liveprice_FTT*conversion).toFixed(2) :pair=="SOL/USDT"?liveprice_SOL: pair=="SOL/INRD"? parseFloat(liveprice_SOL*conversion).toFixed(2) :pair=="RUNE/USDT"?liveprice_RUNE: pair=="RUNE/INRD"? parseFloat(liveprice_RUNE*conversion).toFixed(2) :pair=="UNI/USDT"?liveprice_UNI: pair=="UNI/INRD"? parseFloat(liveprice_UNI*conversion).toFixed(2):pair=="DOT/USDT"?liveprice_DOT: pair=="DOT/INRD"? parseFloat(liveprice_DOT*conversion).toFixed(2) :pair=="VET/USDT"?liveprice_VET: pair=="VET/INRD"? parseFloat(liveprice_VET*conversion).toFixed(2):pair=="TFUEL/USDT"?liveprice_TFUEL: pair=="TFUEL/INRD"? parseFloat(liveprice_TFUEL*conversion).toFixed(2):pair=="GRT/USDT"?liveprice_GRT: pair=="GRT/INRD"? parseFloat(liveprice_GRT*conversion).toFixed(2):pair=="ADA/USDT"?liveprice_ADA: pair=="ADA/INRD"? parseFloat(liveprice_ADA*conversion).toFixed(2):pair=="FIL/USDT"?liveprice_FIL: pair=="FIL/INRD"? parseFloat(liveprice_FIL*conversion).toFixed(2):pair=="LINK/USDT"?liveprice_LINK: pair=="LINK/INRD"? parseFloat(liveprice_LINK*conversion).toFixed(2):pair=="LUNA/USDT"?liveprice_LUNA: pair=="LUNA/INRD"? parseFloat(liveprice_LUNA*conversion).toFixed(2):pair=="THETA/USDT"?liveprice_THETA: parseFloat(liveprice_THETA*conversion).toFixed(2))))
      }}
      aria-labelledby="discrete-slider"
      valueLabelDisplay="auto"
@@ -5902,23 +5963,58 @@ else{
    const curdebt = `${pair.substr(0,pair.indexOf('/'))}_Debt`
    
 
-  if(parseFloat(parseFloat(event.target.value)/parseFloat(stopTake_sell_trig))>parseFloat(localStorage.getItem(curr))){
-     // alert("do you want to transact");
-    const debt=parseFloat(localStorage.getItem(curr) )- parseFloat(event.target.value*stopTake_sell_trig);
-    if(localStorage.getItem(curdebt) +debt > -9999  )
-     localStorage.setItem( curdebt,localStorage.getItem(curdebt) +debt );
-     //console.log(localStorage.getItem(curdebt) +debt);
+  if(parseFloat(parseFloat(event.target.value)/parseFloat( (pair == "BTC/USDT" ? liveprice_BTC : pair == "BTC/INRD" ? parseFloat(liveprice_BTC*conversion).toFixed(2) : pair == "ETH/USDT" ? liveprice_ETH : pair == "ETH/INRD" ? parseFloat(liveprice_ETH*conversion).toFixed(2) : pair == "BNB/USDT" ? liveprice_BNB : pair == "BNB/INRD" ? parseFloat(liveprice_BNB*conversion).toFixed(2) : pair == "KSM/USDT" ? liveprice_KSM : pair == "KSM/INRD" ? parseFloat(liveprice_KSM*conversion).toFixed(2) : pair =="ATA/USDT"? liveprice_ATA : pair=="ATA/INRD" ? parseFloat(liveprice_ATA*conversion).toFixed(2) : pair=="MANA/USDT"? liveprice_MANA : pair=="MANA/INRD" ? parseFloat(liveprice_MANA*conversion).toFixed(2) : pair=="DGB/USDT"?liveprice_DGB: pair=="DGB/INRD"? parseFloat(liveprice_DGB*conversion).toFixed(2) : pair=="FTM/USDT"?liveprice_FTM: pair=="FTM/INRD"? parseFloat(liveprice_FTM*conversion).toFixed(2) : pair=="ALICE/USDT"?liveprice_ALICE: pair=="ALICE/INRD"? parseFloat(liveprice_ALICE*conversion).toFixed(2) : pair=="GTC/USDT"?liveprice_GTC: pair=="GTC/INRD"? parseFloat(liveprice_GTC*conversion).toFixed(2) : pair=="MATIC/USDT"?liveprice_MATIC: pair=="MATIC/INRD"? parseFloat(liveprice_MATIC*conversion).toFixed(2):pair=="AXS/USDT"?liveprice_AXS: pair=="AXS/INRD"? parseFloat(liveprice_AXS*conversion).toFixed(2): pair=="FTT/USDT"?liveprice_FTT: pair=="FTT/INRD"? parseFloat(liveprice_FTT*conversion).toFixed(2) :pair=="SOL/USDT"?liveprice_SOL: pair=="SOL/INRD"? parseFloat(liveprice_SOL*conversion).toFixed(2) :pair=="RUNE/USDT"?liveprice_RUNE: pair=="RUNE/INRD"? parseFloat(liveprice_RUNE*conversion).toFixed(2) :pair=="UNI/USDT"?liveprice_UNI: pair=="UNI/INRD"? parseFloat(liveprice_UNI*conversion).toFixed(2):pair=="DOT/USDT"?liveprice_DOT: pair=="DOT/INRD"? parseFloat(liveprice_DOT*conversion).toFixed(2) :pair=="VET/USDT"?liveprice_VET: pair=="VET/INRD"? parseFloat(liveprice_VET*conversion).toFixed(2):pair=="TFUEL/USDT"?liveprice_TFUEL: pair=="TFUEL/INRD"? parseFloat(liveprice_TFUEL*conversion).toFixed(2):pair=="GRT/USDT"?liveprice_GRT: pair=="GRT/INRD"? parseFloat(liveprice_GRT*conversion).toFixed(2):pair=="ADA/USDT"?liveprice_ADA: pair=="ADA/INRD"? parseFloat(liveprice_ADA*conversion).toFixed(2):pair=="FIL/USDT"?liveprice_FIL: pair=="FIL/INRD"? parseFloat(liveprice_FIL*conversion).toFixed(2):pair=="LINK/USDT"?liveprice_LINK: pair=="LINK/INRD"? parseFloat(liveprice_LINK*conversion).toFixed(2):pair=="LUNA/USDT"?liveprice_LUNA: pair=="LUNA/INRD"? parseFloat(liveprice_LUNA*conversion).toFixed(2):pair=="THETA/USDT"?liveprice_THETA: parseFloat(liveprice_THETA*conversion).toFixed(2))))>parseFloat(localStorage.getItem(curr))){
+    
      
      setvalid_s(false)
   }
   else{
    setvalid_s(true)
-   // setsell_limit_amount(parseFloat(event.target.value)/parseFloat(sell_limit_price))
+  
   }
    
  }}></Input>
 
-           <Button size="lg"  className="bg-dark"  style={{margin:"2rem 0 2rem 0",display:"block",width:"100%"}}>Sell {`${pair.substr(0,pair.indexOf('/'))}`}</Button>
+           <Button disabled={!valid_s} size="lg"  className="bg-dark"  style={{margin:"2rem 0 2rem 0",display:"block",width:"100%"}} onClick={()=>{
+             if(stopTake_sell_trig==0|| stopTake_sell_take==0 ){
+               swal("Error","Enter all fields","error")
+             }
+                    
+             axios({
+        method:"POST",
+        url:"https://api.anteagle.tech/hit",
+        headers:{
+          "Accept": "application/json, text/plain, */*", // It can be used to overcome cors errors
+          "Content-Type": "application/json",
+          Authtoken:"sfsfsff"
+        },
+        data: JSON.stringify({
+          userid : localStorage.getItem("userid"),
+          date: "2021-06-21",
+          pair: pair,
+          type : "Market",
+          side : "SELL",
+          triggerPrice : parseFloat(stopTake_sell_trig),
+          hitPrice: parseFloat( (pair == "BTC/USDT" ? liveprice_BTC : pair == "BTC/INRD" ? parseFloat(liveprice_BTC*conversion).toFixed(2) : pair == "ETH/USDT" ? liveprice_ETH : pair == "ETH/INRD" ? parseFloat(liveprice_ETH*conversion).toFixed(2) : pair == "BNB/USDT" ? liveprice_BNB : pair == "BNB/INRD" ? parseFloat(liveprice_BNB*conversion).toFixed(2) : pair == "KSM/USDT" ? liveprice_KSM : pair == "KSM/INRD" ? parseFloat(liveprice_KSM*conversion).toFixed(2) : pair =="ATA/USDT"? liveprice_ATA : pair=="ATA/INRD" ? parseFloat(liveprice_ATA*conversion).toFixed(2) : pair=="MANA/USDT"? liveprice_MANA : pair=="MANA/INRD" ? parseFloat(liveprice_MANA*conversion).toFixed(2) : pair=="DGB/USDT"?liveprice_DGB: pair=="DGB/INRD"? parseFloat(liveprice_DGB*conversion).toFixed(2) : pair=="FTM/USDT"?liveprice_FTM: pair=="FTM/INRD"? parseFloat(liveprice_FTM*conversion).toFixed(2) : pair=="ALICE/USDT"?liveprice_ALICE: pair=="ALICE/INRD"? parseFloat(liveprice_ALICE*conversion).toFixed(2) : pair=="GTC/USDT"?liveprice_GTC: pair=="GTC/INRD"? parseFloat(liveprice_GTC*conversion).toFixed(2) : pair=="MATIC/USDT"?liveprice_MATIC: pair=="MATIC/INRD"? parseFloat(liveprice_MATIC*conversion).toFixed(2):pair=="AXS/USDT"?liveprice_AXS: pair=="AXS/INRD"? parseFloat(liveprice_AXS*conversion).toFixed(2): pair=="FTT/USDT"?liveprice_FTT: pair=="FTT/INRD"? parseFloat(liveprice_FTT*conversion).toFixed(2) :pair=="SOL/USDT"?liveprice_SOL: pair=="SOL/INRD"? parseFloat(liveprice_SOL*conversion).toFixed(2) :pair=="RUNE/USDT"?liveprice_RUNE: pair=="RUNE/INRD"? parseFloat(liveprice_RUNE*conversion).toFixed(2) :pair=="UNI/USDT"?liveprice_UNI: pair=="UNI/INRD"? parseFloat(liveprice_UNI*conversion).toFixed(2):pair=="DOT/USDT"?liveprice_DOT: pair=="DOT/INRD"? parseFloat(liveprice_DOT*conversion).toFixed(2) :pair=="VET/USDT"?liveprice_VET: pair=="VET/INRD"? parseFloat(liveprice_VET*conversion).toFixed(2):pair=="TFUEL/USDT"?liveprice_TFUEL: pair=="TFUEL/INRD"? parseFloat(liveprice_TFUEL*conversion).toFixed(2):pair=="GRT/USDT"?liveprice_GRT: pair=="GRT/INRD"? parseFloat(liveprice_GRT*conversion).toFixed(2):pair=="ADA/USDT"?liveprice_ADA: pair=="ADA/INRD"? parseFloat(liveprice_ADA*conversion).toFixed(2):pair=="FIL/USDT"?liveprice_FIL: pair=="FIL/INRD"? parseFloat(liveprice_FIL*conversion).toFixed(2):pair=="LINK/USDT"?liveprice_LINK: pair=="LINK/INRD"? parseFloat(liveprice_LINK*conversion).toFixed(2):pair=="LUNA/USDT"?liveprice_LUNA: pair=="LUNA/INRD"? parseFloat(liveprice_LUNA*conversion).toFixed(2):pair=="THETA/USDT"?liveprice_THETA: parseFloat(liveprice_THETA*conversion).toFixed(2))),
+          Amount :stopTake_sell_amount,
+          filled : "0.0",
+          total :  parseFloat( (pair == "BTC/USDT" ? liveprice_BTC : pair == "BTC/INRD" ? parseFloat(liveprice_BTC*conversion).toFixed(2) : pair == "ETH/USDT" ? liveprice_ETH : pair == "ETH/INRD" ? parseFloat(liveprice_ETH*conversion).toFixed(2) : pair == "BNB/USDT" ? liveprice_BNB : pair == "BNB/INRD" ? parseFloat(liveprice_BNB*conversion).toFixed(2) : pair == "KSM/USDT" ? liveprice_KSM : pair == "KSM/INRD" ? parseFloat(liveprice_KSM*conversion).toFixed(2) : pair =="ATA/USDT"? liveprice_ATA : pair=="ATA/INRD" ? parseFloat(liveprice_ATA*conversion).toFixed(2) : pair=="MANA/USDT"? liveprice_MANA : pair=="MANA/INRD" ? parseFloat(liveprice_MANA*conversion).toFixed(2) : pair=="DGB/USDT"?liveprice_DGB: pair=="DGB/INRD"? parseFloat(liveprice_DGB*conversion).toFixed(2) : pair=="FTM/USDT"?liveprice_FTM: pair=="FTM/INRD"? parseFloat(liveprice_FTM*conversion).toFixed(2) : pair=="ALICE/USDT"?liveprice_ALICE: pair=="ALICE/INRD"? parseFloat(liveprice_ALICE*conversion).toFixed(2) : pair=="GTC/USDT"?liveprice_GTC: pair=="GTC/INRD"? parseFloat(liveprice_GTC*conversion).toFixed(2) : pair=="MATIC/USDT"?liveprice_MATIC: pair=="MATIC/INRD"? parseFloat(liveprice_MATIC*conversion).toFixed(2):pair=="AXS/USDT"?liveprice_AXS: pair=="AXS/INRD"? parseFloat(liveprice_AXS*conversion).toFixed(2): pair=="FTT/USDT"?liveprice_FTT: pair=="FTT/INRD"? parseFloat(liveprice_FTT*conversion).toFixed(2) :pair=="SOL/USDT"?liveprice_SOL: pair=="SOL/INRD"? parseFloat(liveprice_SOL*conversion).toFixed(2) :pair=="RUNE/USDT"?liveprice_RUNE: pair=="RUNE/INRD"? parseFloat(liveprice_RUNE*conversion).toFixed(2) :pair=="UNI/USDT"?liveprice_UNI: pair=="UNI/INRD"? parseFloat(liveprice_UNI*conversion).toFixed(2):pair=="DOT/USDT"?liveprice_DOT: pair=="DOT/INRD"? parseFloat(liveprice_DOT*conversion).toFixed(2) :pair=="VET/USDT"?liveprice_VET: pair=="VET/INRD"? parseFloat(liveprice_VET*conversion).toFixed(2):pair=="TFUEL/USDT"?liveprice_TFUEL: pair=="TFUEL/INRD"? parseFloat(liveprice_TFUEL*conversion).toFixed(2):pair=="GRT/USDT"?liveprice_GRT: pair=="GRT/INRD"? parseFloat(liveprice_GRT*conversion).toFixed(2):pair=="ADA/USDT"?liveprice_ADA: pair=="ADA/INRD"? parseFloat(liveprice_ADA*conversion).toFixed(2):pair=="FIL/USDT"?liveprice_FIL: pair=="FIL/INRD"? parseFloat(liveprice_FIL*conversion).toFixed(2):pair=="LINK/USDT"?liveprice_LINK: pair=="LINK/INRD"? parseFloat(liveprice_LINK*conversion).toFixed(2):pair=="LUNA/USDT"?liveprice_LUNA: pair=="LUNA/INRD"? parseFloat(liveprice_LUNA*conversion).toFixed(2):pair=="THETA/USDT"?liveprice_THETA: parseFloat(liveprice_THETA*conversion).toFixed(2)))* stopTake_sell_amount,
+        }),
+      }).then(res=>{console.log(res.data)})
+      const curr = `${pair.substr(0,pair.indexOf('/'))}`
+      //console.log(localStorage.getItem(`${curr}_Coins`) - sell_limit_amount)
+      const end = localStorage.getItem(`${curr}_Coins`) - stopTake_sell_amount;
+      localStorage.setItem(`${curr}_Coins`,end)
+      axios({
+        method:"post",
+        url : `https://api.anteagle.tech/get${curr.toLowerCase()}?coins=${end}&userid=${localStorage.getItem("userid")}`,
+        headers:{
+          "Accept": "application/json",
+        }
+      }).then(res=>{
+        console.log(res.data);swal("Success","Order Submitted Successfully","success");window.location.href = "/"
+      })
+           }}>Sell {`${pair.substr(0,pair.indexOf('/'))}`}</Button>
          </Form>
        </TabPanel>
 
@@ -5992,7 +6088,7 @@ else{
       
     }}></Input>
 
-              <Button size="lg" className="bg-dark"  style={{margin:"2rem 0 2rem 0",display:"block",width:"100%"}}  onClick={()=>{
+              <Button  size="lg" className="bg-dark"  style={{margin:"2rem 0 2rem 0",display:"block",width:"100%"}}  onClick={()=>{
                    setfulltradeType("LIMIT")
                   const tempQ=finalQuants;
       tempQ.push(quant[quant.length-1])
@@ -6107,7 +6203,7 @@ else{
 
                       <TabPanel>
                         <Form style={{marginTop:"0.5rem",color:isDarkDes?"white":"black"}}>
-                        <Label>Selling Price</Label>
+                        <Label>Selling Price ({pair.substr(pair.lastIndexOf("/")+1,pair.length)})</Label>
   <Input  name="price_sell" onChange={(event)=>{
      const tempPrice=pricee;
      tempPrice.push(event.target.value)
@@ -6116,8 +6212,8 @@ else{
 
    }}></Input>
 
-<Label>Selling Amount</Label>
-  <Input style={{color:"white"}} disabled  value={full_trade_sell} name="quantity_sell" onChange={(event)=>{
+<Label>Selling Amount ({pair.substr(pair.lastIndexOf("/")+1,pair.length)})</Label>
+  <Input  disabled  value={full_trade_sell} name="quantity_sell" onChange={(event)=>{
      if(parseFloat(finalQuants[0])-parseFloat(event.target.value) < 0 ){
        //alert("Cannot sell more than you buy");
      }
@@ -6243,77 +6339,156 @@ else{
                       <TabList>
                         <Tab style={{backgroundColor:!isDarkDes?"white":"#161c2d",color: isDarkDes?"white" :"black"}}>Stop-market</Tab>
                         <Tab style={{backgroundColor:!isDarkDes?"white":"#161c2d",color: isDarkDes?"white" :"black"}}>Stop-limit</Tab>
-                        <TabPanel>
-                        <Form style={{marginBottom:"2rem",color:isDarkDes?"white":"black"}}>
-                        <Label>Trigger Price</Label>
-                        <Input></Input>
-
-                        <Label>Profit</Label>
-                        <Input></Input>
-                        <Slider
-        defaultValue={30}
-        getAriaValueText={(value)=>{
-        }}
-        aria-labelledby="discrete-slider"
-        valueLabelDisplay="auto"
-        step={10}
-        marks
-        min={0}
-        max={100}
-      />
-                           <Label>Quantity</Label>
-                        <Input></Input>
-                        <Slider
-        defaultValue={30}
-        getAriaValueText={(value)=>{
-        }}
-        aria-labelledby="discrete-slider"
-        valueLabelDisplay="auto"
-        step={10}
-        marks
-        min={0}
-        max={100}
-      />
-          <Button size="lg" className="bg-dark" style={{display:"block",width:"100%",marginBottom:"2rem"}}>Add Stop-loss </Button>
-                        </Form>
-                        </TabPanel>
-                        <Form  style={{marginBottom:"2rem",color:isDarkDes?"white":"black"}}>
-                        <Label>Trigger Price</Label>
-                        <Input></Input>
-
-                        <Label>Profit</Label>
-                        <Input></Input>
-                        <Slider
-        defaultValue={30}
-        getAriaValueText={(value)=>{
-        }}
-        aria-labelledby="discrete-slider"
-        valueLabelDisplay="auto"
-        step={10}
-        marks
-        min={0}
-        max={100}
-      />
-                           <Label>Quantity</Label>
-                        <Input></Input>
-                        <Slider
-        defaultValue={30}
-        getAriaValueText={(value)=>{
-        }}
-        aria-labelledby="discrete-slider"
-        valueLabelDisplay="auto"
-        step={10}
-        marks
-        min={0}
-        max={100}
-      />
-          <Button size="lg" className="bg-dark" style={{display:"block",width:"100%"}}>Add Stop-loss </Button>
-                        </Form>
-                        <TabPanel>
-
-                        </TabPanel>
 
                       </TabList>
+
+                    <TabPanel>
+
+                    <Form  style={{marginBottom:"2rem",color:isDarkDes?"white":"black"}}>
+                    <Label>Trigger Price  ( {`${pair.substr(pair.indexOf('/')+1,pair.length)}`} )</Label>
+           <Input  placeholder={`ENTER PRICE in ${pair.substr(pair.indexOf('/')+1,pair.length)}`} value={fullStop_market_trig} onChange={(event)=>{
+                    setfullStop_market_trig(event.target.value)
+                  
+                }}></Input>
+                    
+
+                        <Label>Profit</Label>
+                        <Input  placeholder={`Percentage loss incurred`} value={fullStop_market_profit1}></Input>
+                        <Slider
+        defaultValue={0}
+        getAriaValueText={(value)=>{
+            setfullStop_market_trig( parseFloat(finalPrices[0]) +( (parseFloat(value)/100 )*parseFloat(finalPrices[0]) ) )
+            setfullStop_market_profit1(value)
+        }}
+     
+       
+        aria-labelledby="discrete-slider"
+        valueLabelDisplay="auto"
+        step={10}
+        marks
+        min={-100}
+        max={0}
+      />
+                           <Label>Quantity</Label>
+                        <Input value={fullStop_market_quantity}></Input>
+                        <Slider
+        defaultValue={30}
+        getAriaValueText={(value)=>{
+          setfullStop_market_quantity(localStorage.getItem(`purchased_quantity_${pair}`)*value/100)
+       
+      
+        }}
+        aria-labelledby="discrete-slider"
+        valueLabelDisplay="auto"
+        step={10}
+        marks
+        min={0}
+        max={100}
+      />
+          <Button size="lg" className="bg-dark" style={{display:"block",width:"100%"}} onClick={()=>{
+
+axios({
+        method:"POST",
+        url:"https://api.anteagle.tech/hit",
+        headers:{
+          "Accept": "application/json, text/plain, */*", // It can be used to overcome cors errors
+          "Content-Type": "application/json",
+          Authtoken:"sfsfsff"
+        },
+        data: JSON.stringify({
+          userid : localStorage.getItem("userid"),
+          date: "2021-06-21",
+          pair: pair,
+          type : "Market",
+          side : "SELL",
+          triggerPrice : parseFloat(fullStop_market_trig),
+          profit: fullStop_market_profit1,
+          hitPrice: parseFloat( (pair == "BTC/USDT" ? liveprice_BTC : pair == "BTC/INRD" ? parseFloat(liveprice_BTC*conversion).toFixed(2) : pair == "ETH/USDT" ? liveprice_ETH : pair == "ETH/INRD" ? parseFloat(liveprice_ETH*conversion).toFixed(2) : pair == "BNB/USDT" ? liveprice_BNB : pair == "BNB/INRD" ? parseFloat(liveprice_BNB*conversion).toFixed(2) : pair == "KSM/USDT" ? liveprice_KSM : pair == "KSM/INRD" ? parseFloat(liveprice_KSM*conversion).toFixed(2) : pair =="ATA/USDT"? liveprice_ATA : pair=="ATA/INRD" ? parseFloat(liveprice_ATA*conversion).toFixed(2) : pair=="MANA/USDT"? liveprice_MANA : pair=="MANA/INRD" ? parseFloat(liveprice_MANA*conversion).toFixed(2) : pair=="DGB/USDT"?liveprice_DGB: pair=="DGB/INRD"? parseFloat(liveprice_DGB*conversion).toFixed(2) : pair=="FTM/USDT"?liveprice_FTM: pair=="FTM/INRD"? parseFloat(liveprice_FTM*conversion).toFixed(2) : pair=="ALICE/USDT"?liveprice_ALICE: pair=="ALICE/INRD"? parseFloat(liveprice_ALICE*conversion).toFixed(2) : pair=="GTC/USDT"?liveprice_GTC: pair=="GTC/INRD"? parseFloat(liveprice_GTC*conversion).toFixed(2) : pair=="MATIC/USDT"?liveprice_MATIC: pair=="MATIC/INRD"? parseFloat(liveprice_MATIC*conversion).toFixed(2):pair=="AXS/USDT"?liveprice_AXS: pair=="AXS/INRD"? parseFloat(liveprice_AXS*conversion).toFixed(2): pair=="FTT/USDT"?liveprice_FTT: pair=="FTT/INRD"? parseFloat(liveprice_FTT*conversion).toFixed(2) :pair=="SOL/USDT"?liveprice_SOL: pair=="SOL/INRD"? parseFloat(liveprice_SOL*conversion).toFixed(2) :pair=="RUNE/USDT"?liveprice_RUNE: pair=="RUNE/INRD"? parseFloat(liveprice_RUNE*conversion).toFixed(2) :pair=="UNI/USDT"?liveprice_UNI: pair=="UNI/INRD"? parseFloat(liveprice_UNI*conversion).toFixed(2):pair=="DOT/USDT"?liveprice_DOT: pair=="DOT/INRD"? parseFloat(liveprice_DOT*conversion).toFixed(2) :pair=="VET/USDT"?liveprice_VET: pair=="VET/INRD"? parseFloat(liveprice_VET*conversion).toFixed(2):pair=="TFUEL/USDT"?liveprice_TFUEL: pair=="TFUEL/INRD"? parseFloat(liveprice_TFUEL*conversion).toFixed(2):pair=="GRT/USDT"?liveprice_GRT: pair=="GRT/INRD"? parseFloat(liveprice_GRT*conversion).toFixed(2):pair=="ADA/USDT"?liveprice_ADA: pair=="ADA/INRD"? parseFloat(liveprice_ADA*conversion).toFixed(2):pair=="FIL/USDT"?liveprice_FIL: pair=="FIL/INRD"? parseFloat(liveprice_FIL*conversion).toFixed(2):pair=="LINK/USDT"?liveprice_LINK: pair=="LINK/INRD"? parseFloat(liveprice_LINK*conversion).toFixed(2):pair=="LUNA/USDT"?liveprice_LUNA: pair=="LUNA/INRD"? parseFloat(liveprice_LUNA*conversion).toFixed(2):pair=="THETA/USDT"?liveprice_THETA: parseFloat(liveprice_THETA*conversion).toFixed(2))),
+          Amount :fullStop_market_quantity,
+          filled : "0.0",
+         
+        }),
+      }).then(res=>{console.log(res.data)})
+      
+
+          }}>Add Stop-loss </Button>
+                        </Form>
+                    </TabPanel>
+                    
+                    
+                    <TabPanel>
+                    <Form  style={{marginBottom:"2rem",color:isDarkDes?"white":"black"}}>
+                    <Label>Trigger Price  ( {`${pair.substr(pair.indexOf('/')+1,pair.length)}`} )</Label>
+           <Input  placeholder={`ENTER PRICE in ${pair.substr(pair.indexOf('/')+1,pair.length)}`} value={fullStop_limit_trig} onChange={(event)=>{
+                    setfullStop_limit_trig(event.target.value)
+                  
+                }}></Input>
+                     <Label>Stop Price  ( {`${pair.substr(pair.indexOf('/')+1,pair.length)}`} )</Label>
+           <Input  placeholder={`ENTER PRICE in ${pair.substr(pair.indexOf('/')+1,pair.length)}`} value={fullStop_limit_stop} onChange={(event)=>{
+                    setfullStop_limit_stop(event.target.value)
+                  
+                }}></Input>
+
+                        <Label>Profit</Label>
+                        <Input  placeholder={`Percentage loss incurred`} value={fullStop_limit_profit1}></Input>
+                        <Slider
+        defaultValue={0}
+        getAriaValueText={(value)=>{
+            setfullStop_limit_trig( parseFloat(finalPrices[0]) +( (parseFloat(value)/100 )*parseFloat(finalPrices[0]) ) )
+            setfullStop_limit_profit1(value)
+        }}
+     
+       
+        aria-labelledby="discrete-slider"
+        valueLabelDisplay="auto"
+        step={10}
+        marks
+        min={-100}
+        max={0}
+      />
+                           <Label>Quantity</Label>
+                        <Input value={fullStop_limit_quantity}></Input>
+                        <Slider
+        defaultValue={30}
+        getAriaValueText={(value)=>{
+          setfullStop_limit_quantity(localStorage.getItem(`purchased_quantity_${pair}`)*value/100)
+       
+      
+        }}
+        aria-labelledby="discrete-slider"
+        valueLabelDisplay="auto"
+        step={10}
+        marks
+        min={0}
+        max={100}
+      />
+          <Button size="lg" className="bg-dark" style={{display:"block",width:"100%"}} onClick={()=>{
+                axios({
+        method:"POST",
+        url:"https://api.anteagle.tech/hit",
+        headers:{
+          "Accept": "application/json, text/plain, */*", // It can be used to overcome cors errors
+          "Content-Type": "application/json",
+          Authtoken:"sfsfsff"
+        },
+        data: JSON.stringify({
+          userid : localStorage.getItem("userid"),
+          date: "2021-06-21",
+          pair: pair,
+          type : "Limit",
+          side : "SELL",
+          triggerPrice : parseFloat(fullStop_limit_trig),
+          profit: fullStop_limit_profit1,
+          hitPrice: fullStop_limit_stop,
+          Amount :fullStop_limit_quantity,
+          filled : "0.0",
+         
+        }),
+      }).then(res=>{console.log(res.data)})
+      
+          }}>Add Stop-loss </Button>
+                        </Form>
+                    </TabPanel>
                     </Tabs>
                   
                   </>
@@ -7083,10 +7258,10 @@ else{
               <CardBody>
                 <Form>
                   <Label >Enter Address</Label>
-                  <Input placeholder="Copy & Paste Your Address here to withdraw your coins" style={{borderRadius:"2rem",margin:"0.3rem 0  "}} onChange={(e)=>{setwallet2(e.target.value)}}></Input>
+                  <Input  placeholder="Copy & Paste Your Address here to withdraw your coins" style={{borderRadius:"2rem",margin:"0.3rem 0  "}} onChange={(e)=>{setwallet2(e.target.value)}}></Input>
                   <Label  >Amount</Label>
                  
-                  <Input placeholder="Enter Amount" style={{borderRadius:"2rem",margin:"0.3rem 0  "}} onChange={(e)=>{
+                  <Input required placeholder="Enter Amount" style={{borderRadius:"2rem",margin:"0.3rem 0  "}} onChange={(e)=>{
                     setamount2(e.target.value)
                   }}></Input>
         
