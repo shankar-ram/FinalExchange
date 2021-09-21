@@ -201,9 +201,9 @@ all.onmessage = evt => {
           </div>
           <div className="col-lg-4 col-md-4 col-sm-6  col-6" style={{paddingBottom:"1.2rem"}}>
             <h4 style={{fontSize:"1.2rem",color:"whitesmoke"}}>ANTEAG/INR </h4>
-             <h4><span style={{color:btc_per > 0 ? "green" : "red",fontSize:"1.2rem"}}>{bnb_per} %</span></h4>
-             <h4 style={{color:'gold',fontSize:"1.2rem"}}>₹ {parseFloat(liveprice_BNB*0.00027169956*conversion).toFixed(3)}</h4>
-            <h4 style={{fontSize:"1.2rem",color:"whitesmoke"}} >$ {parseFloat(liveprice_BNB*0.00027169956).toFixed(3)}</h4>
+             
+             <h4 style={{color:'gold',fontSize:"1.2rem"}}>₹ 0.29421</h4>
+            <h4 style={{fontSize:"1.2rem",color:"whitesmoke"}} >$ {(0.29421/conversion).toFixed(3)}</h4>
           </div>
           <div className="col-lg-4 col-md-4 col-sm-6  col-6" style={{paddingBottom:"1.2rem"}}>
             <h4 style={{fontSize:"1.2rem",color:"whitesmoke"}}>EAGLE/INR </h4>
