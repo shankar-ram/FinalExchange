@@ -11270,9 +11270,9 @@ else{
                   return(
                         <>
                         <tr>
-                        <td style={{textAlign:"center"}}> {i>0?fulltradeSellType:fulltradeType}</td>
-                        <td style={{textAlign:"center"}}> {i > 0 ? 'Sell' : 'Buy'}</td>
-                        <td style={{textAlign:"center"}}>{ans}</td>
+                        <td style={{textAlign:"left"}}> {i>0?fulltradeSellType:fulltradeType}</td>
+                        <td style={{textAlign:"left"}}> {i > 0 ? 'Sell' : 'Buy'}</td>
+                        <td style={{textAlign:"left"}}>{ans}</td>
                         <td style={{textAlign:"left"}}>{finalQuants[i]}</td>
                         </tr>
                         </>
@@ -11284,9 +11284,9 @@ else{
                   return(
                         <>
                         <tr>
-                        <td style={{textAlign:"center"}}> {ans1[0]}</td>
-                        <td style={{textAlign:"center"}}> {ans1[1]}</td>
-                        <td style={{textAlign:"center"}}>{ans1[2]}</td>
+                        <td style={{textAlign:"left"}}> {ans1[0]}</td>
+                        <td style={{textAlign:"left"}}> {ans1[1]}</td>
+                        <td style={{textAlign:"left"}}>{ans1[2]}</td>
                         <td style={{textAlign:"left"}}>{ans1[3]}</td>
                         <td style={{textAlign:"left"}}>{ans1[4]}</td>
                         </tr>
